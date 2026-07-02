@@ -1,0 +1,21 @@
+# Build artifacts
+*.exe
+*.o
+*.obj
+*.out
+build/
+
+# Scratch/test binaries you compile locally
+test_jd
+test_jd.exe
+test_elements
+test_elements.exe
+
+# IDE / editor junk
+.vscode/
+*.suo
+*.user
+
+# OS junk
+Thumbs.db
+.DS_Store
