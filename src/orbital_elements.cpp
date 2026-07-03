@@ -1,4 +1,5 @@
 #include "orbital_elements.hpp"
+#include <cmath>
 
 const std::vector<OrbitalElements>& referenceTable() {
     static const std::vector<OrbitalElements> table = {
@@ -12,4 +13,30 @@ const std::vector<OrbitalElements>& referenceTable() {
         {"Neptune", 30.06992276,  0.00026291,  0.00859048,  0.00005105,  1.77004347,   0.00035372,  -55.12002969,    218.45945325,  44.96476227, -0.32241464, 131.78422574, -0.00508664},
     };
     return table;
+}
+
+double wrapTo180(double deg) {
+    while (deg > 180.0) {
+        deg -= 360.0;
+    }
+    while (deg <= -180.0) {
+        deg += 360.0;
+    }
+    return deg;
+}
+
+OrbitalElementsAtEpoch elementsAtTime(const OrbitalElements& base, double T) {
+    double a = base.a0 + base.a_dot * T;
+    double e = base.e0 + base.e_dot * T;
+    double i_deg = base.i0 + base.i_dot * T;
+    double L = base.L0 + base.L_dot * T;
+    double long_peri = base.long_peri0 + base.long_peri_dot * T;
+    double long_node = base.long_node0 + base.long_node_dot * T;
+    double node_deg = long_node;
+
+    double meanAnomaly_deg = wrapTo180(L - long_peri);
+    double argPeri_deg = long_peri - long_node;   // NOT wrapped
+
+    OrbitalElementsAtEpoch result = {base.name, a, e, i_deg, meanAnomaly_deg, argPeri_deg, node_deg};
+    return result;
 }

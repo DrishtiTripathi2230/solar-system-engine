@@ -24,3 +24,5 @@ const std::vector<OrbitalElements>& referenceTable();
 OrbitalElementsAtEpoch elementsAtTime(const OrbitalElements& base, double T);
 
 #endif // ORBITAL_ELEMENTS_HPP
+
+double wrapTo180(double deg);
