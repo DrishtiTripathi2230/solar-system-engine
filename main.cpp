@@ -9,9 +9,6 @@
 #include "visualizer.hpp"
 
 // ---- Input helpers -----------------------------------------------------
-// Reads an integer within [minVal, maxVal]. Re-prompts on non-numeric input
-// (e.g. letters) and on out-of-range values, instead of silently accepting
-// bad data or leaving std::cin in a broken state.
 static int readIntInRange(const std::string& prompt, int minVal, int maxVal) {
     int value;
     while (true) {
@@ -19,8 +16,8 @@ static int readIntInRange(const std::string& prompt, int minVal, int maxVal) {
         std::cin >> value;
 
         if (std::cin.fail()) {
-            std::cin.clear(); // reset the error flag
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // discard bad input
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::cout << "  That's not a valid whole number. Please try again.\n";
             continue;
         }
@@ -35,7 +32,6 @@ static int readIntInRange(const std::string& prompt, int minVal, int maxVal) {
     }
 }
 
-// Reads a double within [minVal, maxVal], with the same validation approach.
 static double readDoubleInRange(const std::string& prompt, double minVal, double maxVal) {
     double value;
     while (true) {
@@ -59,8 +55,6 @@ static double readDoubleInRange(const std::string& prompt, double minVal, double
     }
 }
 
-// Returns the number of days in a given month/year, accounting for leap years,
-// so day input can be validated properly (e.g. reject Feb 30).
 static int daysInMonth(int year, int month) {
     static const int days[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
     if (month == 2) {
@@ -88,9 +82,11 @@ int main() {
     std::cout << "\nJulian Day: " << jd << "\n";
     std::cout << "Centuries since J2000: " << T << "\n";
 
-    std::cout << "\n=== Planet Positions ===\n\n";
+    std::cout << "\n=== Heliocentric Positions (relative to the Sun) ===\n\n";
 
     std::vector<PlanetResult> results;
+    Vec3 earthPosition{0.0, 0.0, 0.0};
+    bool earthFound = false;
 
     for (const OrbitalElements& base : referenceTable()) {
         OrbitalElementsAtEpoch elem = elementsAtTime(base, T);
@@ -108,6 +104,30 @@ int main() {
         std::cout << "  Position (x, y, z): (" << eclPos.x << ", " << eclPos.y << ", " << eclPos.z << ")\n\n";
 
         results.push_back({elem.name, distanceFromSun, eclPos});
+
+        if (elem.name == "Earth") {
+            earthPosition = eclPos;
+            earthFound = true;
+        }
+    }
+
+    if (!earthFound) {
+        std::cout << "Warning: Earth not found in reference table, skipping geocentric positions.\n";
+        printSolarSystemMap(results);
+        return 1;
+    }
+
+    std::cout << "\n=== Geocentric Positions (relative to Earth) ===\n\n";
+
+    for (const auto& p : results) {
+        if (p.name == "Earth") continue;
+
+        Vec3 geoPos = geocentricPosition(p.position, earthPosition);
+        double distanceFromEarth = sqrt(geoPos.x * geoPos.x + geoPos.y * geoPos.y + geoPos.z * geoPos.z);
+
+        std::cout << p.name << ":\n";
+        std::cout << "  Distance from Earth: " << distanceFromEarth << " AU\n";
+        std::cout << "  Position (x, y, z): (" << geoPos.x << ", " << geoPos.y << ", " << geoPos.z << ")\n\n";
     }
 
     printSolarSystemMap(results);

@@ -33,3 +33,11 @@ Vec3 orbitalToEcliptic(const Vec3& orbitalPos, double argPeri_deg, double inclin
 
     return result;
 }
+
+Vec3 geocentricPosition(const Vec3& planetHeliocentric, const Vec3& earthHeliocentric) {
+    Vec3 result;
+    result.x = planetHeliocentric.x - earthHeliocentric.x;
+    result.y = planetHeliocentric.y - earthHeliocentric.y;
+    result.z = planetHeliocentric.z - earthHeliocentric.z;
+    return result;
+}
