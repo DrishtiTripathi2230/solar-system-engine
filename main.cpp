@@ -6,6 +6,7 @@
 #include "orbital_elements.hpp"
 #include "kepler_solver.hpp"
 #include "heliocentric_position.hpp"
+#include "equatorial_position.hpp"
 #include "visualizer.hpp"
 
 // ---- Input helpers -----------------------------------------------------
@@ -119,15 +120,22 @@ int main() {
 
     std::cout << "\n=== Geocentric Positions (relative to Earth) ===\n\n";
 
+    double obliquity = obliquityOfEcliptic(T);
+
     for (const auto& p : results) {
         if (p.name == "Earth") continue;
 
         Vec3 geoPos = geocentricPosition(p.position, earthPosition);
         double distanceFromEarth = sqrt(geoPos.x * geoPos.x + geoPos.y * geoPos.y + geoPos.z * geoPos.z);
 
+        Vec3 equatorialPos = eclipticToEquatorial(geoPos, obliquity);
+        EquatorialCoords raDec = vectorToRaDec(equatorialPos);
+
         std::cout << p.name << ":\n";
         std::cout << "  Distance from Earth: " << distanceFromEarth << " AU\n";
-        std::cout << "  Position (x, y, z): (" << geoPos.x << ", " << geoPos.y << ", " << geoPos.z << ")\n\n";
+        std::cout << "  Position (x, y, z): (" << geoPos.x << ", " << geoPos.y << ", " << geoPos.z << ")\n";
+        std::cout << "  Right Ascension: " << raDec.rightAscension_hours << "h\n";
+        std::cout << "  Declination: " << raDec.declination_deg << " deg\n\n";
     }
 
     printSolarSystemMap(results);

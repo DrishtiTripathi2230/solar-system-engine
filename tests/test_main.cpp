@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include "time_system.hpp"
+#include "equatorial_position.hpp"
 #include "orbital_elements.hpp"
 #include "kepler_solver.hpp"
 #include "heliocentric_position.hpp"
@@ -100,12 +101,32 @@ void testHeliocentricPosition() {
     check("geocentricPosition simple offset, y", geo.y, 4.0, 1e-9);
     check("geocentricPosition simple offset, z", geo.z, 4.0, 1e-9);
 }
+void testEquatorialPosition() {
+    std::cout << "\n--- Module 7: Equatorial Position ---\n";
 
+    double eps0 = obliquityOfEcliptic(0.0);
+    check("Obliquity at T=0", eps0, 23.439291, 1e-4);
+
+    Vec3 e2 = eclipticToEquatorial({0.0, 1.0, 0.0}, eps0);
+    check("eclipticToEquatorial y-axis, y", e2.y, 0.917482, 1e-5);
+    check("eclipticToEquatorial y-axis, z", e2.z, 0.397777, 1e-5);
+
+    EquatorialCoords c1 = vectorToRaDec({1.0, 0.0, 0.0});
+    check("vectorToRaDec x-axis, RA", c1.rightAscension_hours, 0.0, 1e-9);
+    check("vectorToRaDec x-axis, Dec", c1.declination_deg, 0.0, 1e-9);
+
+    EquatorialCoords c2 = vectorToRaDec({0.0, 0.0, 1.0});
+    check("vectorToRaDec z-axis, Dec", c2.declination_deg, 90.0, 1e-9);
+
+    EquatorialCoords c3 = vectorToRaDec({0.0, 1.0, 0.0});
+    check("vectorToRaDec y-axis, RA", c3.rightAscension_hours, 6.0, 1e-9);
+}
 int main() {
     testTimeSystem();
     testOrbitalElements();
     testKeplerSolver();
     testHeliocentricPosition();
+    testEquatorialPosition();
 
     std::cout << "\n=== Results: " << testsPassed << "/" << testsRun << " tests passed ===\n";
 
